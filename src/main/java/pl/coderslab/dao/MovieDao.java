@@ -1,8 +1,8 @@
 package pl.coderslab.dao;
 
+import org.mindrot.jbcrypt.BCrypt;
 import pl.coderslab.utils.Movie;
 import pl.coderslab.utils.DBUtils;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -27,75 +27,75 @@ public class MovieDao extends Movie {
     public MovieDao() {
     }
 
-    public void addUserToDB(Movie Movie) {
-        if (isExist(user)) {
+    public void addMovieToDB(Movie movie) {
+        if (isExist(movie)) {
             try (Connection connection = DBUtils.getConnection("workshop2")) {
                 Statement stm = connection.createStatement();
-                ResultSet resultSet = stm.executeQuery(SELECT_USER + "\'" + user.getEmail() + "\'");
+                ResultSet resultSet = stm.executeQuery(SELECT_USER + "\'" + movie.getTitle() + "\'");
                 resultSet.next();
-                user.setId(resultSet.getInt("id"));
-                System.out.println(ConsoleColors.PURPLE_BRIGHT + "User with id = " + user.getId() + " already exists in the database.");
+                movie.setId(resultSet.getInt("id"));
+                System.out.println(movie.getId() + " already exists in the database.");
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
         } else {
             try (Connection connection = DBUtils.getConnection("workshop2");
                  PreparedStatement preparedStatement = connection.prepareStatement(CREATE_USER_QUERY, PreparedStatement.RETURN_GENERATED_KEYS)) {
-                preparedStatement.setString(1, user.getUserName());
-                preparedStatement.setString(2, user.getEmail());
-                preparedStatement.setString(3, user.getPassword());
+                preparedStatement.setString(1, movie.getTitle());
+                preparedStatement.setString(2, movie.getProductionData());
+                preparedStatement.setString(3, String.valueOf(movie.getMovieLength()));
                 preparedStatement.executeUpdate();
                 ResultSet rs = preparedStatement.getGeneratedKeys();
                 if (rs.next()) {
-                    user.setId(rs.getInt(1));
+                    movie.setId(rs.getInt(1));
                 }
-                System.out.println(ConsoleColors.PURPLE_BRIGHT + "Added user with id = " + user.getId());
+                System.out.println("Added user with id = " + movie.getId());
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
         }
     }
 
-    public User read(int userID) {
-        User user = new User();
+    public Movie read(int userID) {
+        Movie movie = new Movie();
         try (Connection connection = DBUtils.getConnection("workshop2")) {
             Statement stm = connection.createStatement();
             ResultSet resultSet = stm.executeQuery(SELECT_USER_BY_ID + "\'" + userID + "\'");
             if (resultSet.next()) {
-                user.setId(Integer.parseInt(resultSet.getString("id")));
-                user.setUserName(resultSet.getString("username"));
-                user.setEmail(resultSet.getString("email"));
-                user.setPassword(resultSet.getString("password"));
-                user.toString();
-                return user;
+                movie.setId(Integer.parseInt(resultSet.getString("id")));
+                movie.setTitle(resultSet.getString("title"));
+                movie.setProductionData(resultSet.getString("movie_date"));
+                movie.setMovieLength(Integer.parseInt(resultSet.getString("movie_length")));
+                movie.toString();
+                return movie;
             } else {
-                System.out.println(ConsoleColors.PURPLE_BRIGHT + "The record does not exist in the database");
+//                System.out.println(ConsoleColors.PURPLE_BRIGHT + "The record does not exist in the database");
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        return user;
+        return movie;
     }
 
-    public void update(User user) {
-        if (!isExist(user)) {
-            int id = user.getId();
-            String username = user.getUserName();
-            String email = user.getEmail();
-            String password = user.getPassword();
+    public void update(Movie movie) {
+        if (!isExist(movie)) {
+            int id = movie.getId();
+            String username = movie.getTitle();
+            String email = movie.getProductionData();
+            int password = movie.getMovieLength();
             try (Connection connection = DBUtils.getConnection("workshop2")) {
                 PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_USER_QUERY);
                 preparedStatement.setString(1, username);
                 preparedStatement.setString(2, email);
-                preparedStatement.setString(3, hashPassword(password));
+                preparedStatement.setString(3, String.valueOf(password));
                 preparedStatement.setInt(4, id);
                 preparedStatement.executeUpdate();
-                System.out.println(ConsoleColors.PURPLE_BRIGHT + "Data updated.");
+                System.out.println("Data updated.");
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
         } else {
-            System.out.println(ConsoleColors.PURPLE_BRIGHT + "This user already exists in the database.");
+//            System.out.println(ConsoleColors.PURPLE_BRIGHT + "This user already exists in the database.");
         }
     }
 
@@ -105,42 +105,42 @@ public class MovieDao extends Movie {
                 PreparedStatement preparedStatement = connection.prepareStatement(DELETE_USER_QUERY);
                 preparedStatement.setInt(1, userId);
                 preparedStatement.executeUpdate();
-                System.out.println(ConsoleColors.PURPLE_BRIGHT + "Record deleted from database");
+//                System.out.println(ConsoleColors.PURPLE_BRIGHT + "Record deleted from database");
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
         } else {
-            System.out.println(ConsoleColors.PURPLE_BRIGHT + "The record does not exist in the database.");
+//            System.out.println(ConsoleColors.PURPLE_BRIGHT + "The record does not exist in the database.");
         }
     }
 
-    public User[] findAll() {
-        User user = new User();
-        User[] usersArr = new User[0];
+    public Movie[] findAll() {
+        Movie movie = new Movie();
+        Movie[] moviesArr = new Movie[0];
         try (Connection connection = DBUtils.getConnection("workshop2")) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(SELECT_ALL_FROM_USERS);
             while (resultSet.next()) {
-                user.setId(resultSet.getInt("id"));
-                user.setUserName(resultSet.getString("username"));
-                user.setEmail(resultSet.getString("email"));
-                user.setPassword(resultSet.getString("password"));
-                usersArr = addToArray(user, usersArr);
-                user = new User();
+                movie.setId(resultSet.getInt("id"));
+                movie.setTitle(resultSet.getString("username"));
+                movie.setProductionData(resultSet.getString("email"));
+                movie.setMovieLength(Integer.parseInt(resultSet.getString("password")));
+                moviesArr = addToArray(movie, moviesArr);
+                movie = new Movie();
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return usersArr;
+        return moviesArr;
     }
 
-    private User[] addToArray(User user, User[] users) {
-        User[] usersTmp = Arrays.copyOf(users, users.length + 1);
-        usersTmp[usersTmp.length - 1] = user;
-        return usersTmp;
+    private Movie[] addToArray(Movie movie, Movie[] movies) {
+        Movie[] moviesTmp = Arrays.copyOf(movies, movies.length + 1);
+        moviesTmp[moviesTmp.length - 1] = movie;
+        return moviesTmp;
     }
 
-    public static void saveDataToFile(User[] userArr) {
+    public static void saveDataToFile(Movie[] moviesArr) {
         File file = new File(PATH_TO_SAVE_AND_LOAD_DATA);
         Path path = Paths.get(PATH_TO_SAVE_AND_LOAD_DATA);
         if (!file.exists()) {
@@ -151,8 +151,8 @@ public class MovieDao extends Movie {
             }
         }
         try (PrintWriter pw = new PrintWriter(file);) {
-            for (int i = 0; i < userArr.length; i++) {
-                pw.println(userArr[i].getId() + "," + userArr[i].getUserName() + "," + userArr[i].getEmail() + "," + userArr[i].getPassword());
+            for (int i = 0; i < moviesArr.length; i++) {
+                pw.println(moviesArr[i].getId() + "," + moviesArr[i].getTitle() + "," + moviesArr[i].getProductionData() + "," + moviesArr[i].getMovieLength());
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -162,7 +162,7 @@ public class MovieDao extends Movie {
     public static void loadDataToDatabase(Path path) throws FileNotFoundException {
         File file = new File(String.valueOf(path));
         Scanner scan = new Scanner(file);
-        UserDao userDao = new UserDao();
+        MovieDao movieDao = new MovieDao();
         if(Files.exists(path)){
             file = new File(String.valueOf(path));
             while (scan.hasNext()){
@@ -171,21 +171,21 @@ public class MovieDao extends Movie {
                 //userArr[1] - userName
                 //userArr[2] - userEmail
                 //userArr[3] - userPassword
-                User user = new User(userArr[1],userArr[2],userArr[3]);
-                userDao.addUserToDB(user);
+                Movie movie = new Movie(userArr[1],userArr[2],Integer.parseInt(userArr[3]));
+                movieDao.addMovieToDB(movie);
             }
         } else {
             System.out.println("File does not exist!");
         }
     }
 
-    public Boolean isExist(User user) {
+    public Boolean isExist(Movie movie) {
         boolean result = false;
         try (Connection connection = DBUtils.getConnection("workshop2")) {
             Statement stm = connection.createStatement();
-            ResultSet resultSet = stm.executeQuery(SELECT_USER + "\'" + user.getEmail() + "\'");
+            ResultSet resultSet = stm.executeQuery(SELECT_USER + "\'" + movie.getTitle() + "\'");
             if (resultSet.next()) {
-                if (user.getEmail().equals(resultSet.getString("email"))) {
+                if (movie.getTitle().equals(resultSet.getString("title"))) {
                     result = true;
                 }
             }
@@ -215,35 +215,35 @@ public class MovieDao extends Movie {
         return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 
-    public void ShowAllUsers(User[] usersArr) {
+    public void ShowAllUsers(Movie[] moviesArr) {
         int maxLengthOfUsersId = 0;
         int maxLengthOfUsersName = 0;
-        for (int i = 0; i < usersArr.length; i++) {
-            String userId = String.valueOf(usersArr[i].getId());
-            String userName = usersArr[i].getUserName();
-            if (maxLengthOfUsersId < userId.length()) {
-                maxLengthOfUsersId = userId.length();
+        for (int i = 0; i < moviesArr.length; i++) {
+            String movieId = String.valueOf(moviesArr[i].getId());
+            String title = moviesArr[i].getTitle();
+            if (maxLengthOfUsersId < movieId.length()) {
+                maxLengthOfUsersId = movieId.length();
             }
-            if (maxLengthOfUsersName < userName.length()) {
-                maxLengthOfUsersName = userName.length();
+            if (maxLengthOfUsersName < title.length()) {
+                maxLengthOfUsersName = title.length();
             }
         }
-        for (int i = 0; i < usersArr.length; i++) {
-            String userId = String.valueOf(usersArr[i].getId());
-            if (usersArr[i].getId() < 10) {
-                userId = "0" + String.valueOf(usersArr[i].getId());
+        for (int i = 0; i < moviesArr.length; i++) {
+            String userId = String.valueOf(moviesArr[i].getId());
+            if (moviesArr[i].getId() < 10) {
+                userId = "0" + String.valueOf(moviesArr[i].getId());
             }
-            String userName = usersArr[i].getUserName();
+            String userName = moviesArr[i].getTitle();
             int LengthOfUserID = userId.length();
             int LengthOfUserName = userName.length();
             String result = "id = "
                     + userId + "," + "".replace("", " ".repeat(maxLengthOfUsersId - LengthOfUserID + 2))
-                    + "userName = " + usersArr[i].getUserName() + "," + "".replace("", " ".repeat(maxLengthOfUsersName - LengthOfUserName + 2))
-                    + "email = " + usersArr[i].getPassword();
+                    + "userName = " + moviesArr[i].getTitle() + "," + "".replace("", " ".repeat(maxLengthOfUsersName - LengthOfUserName + 2))
+                    + "email = " + moviesArr[i].getMovieLength();
             if (i % 2 == 0) {
-                result = ConsoleColors.BLUE_BRIGHT + result;
+//                result = ConsoleColors.BLUE_BRIGHT + result;
             } else if (i % 1 == 0) {
-                result = ConsoleColors.YELLOW_BRIGHT + result;
+//                result = ConsoleColors.YELLOW_BRIGHT + result;
             }
             System.out.println(result);
         }

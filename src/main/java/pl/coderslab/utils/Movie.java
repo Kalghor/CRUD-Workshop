@@ -1,17 +1,17 @@
 package pl.coderslab.utils;
 
 public class Movie {
-    private int movie_id;
+    private int id;
     private String title;
     private String productionData;
     private int movieLength;
 
-    public int getMovie_id() {
-        return movie_id;
+    public int getId() {
+        return id;
     }
 
-    public void setMovie_id(int movie_id) {
-        this.movie_id = movie_id;
+    public void setId(int movie_id) {
+        this.id = movie_id;
     }
 
     public String getTitle() {
@@ -41,10 +41,19 @@ public class Movie {
     @Override
     public String toString() {
         return "Movie{" +
-                "movie_id=" + movie_id +
+                "movie_id=" + id +
                 ", title='" + title + '\'' +
                 ", productionData='" + productionData + '\'' +
                 ", movieLength=" + movieLength +
                 '}';
     }
+
+    public Movie(String title, String productionData, int movieLength) {
+        this.title = title;
+        this.productionData = productionData;
+        this.movieLength = movieLength;
+    }
+    public Movie() {
+     }
+
 }
