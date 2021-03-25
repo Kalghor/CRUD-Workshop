@@ -6,8 +6,11 @@ USE movies_library;
 
 CREATE TABLE movies (
   movie_id int AUTO_INCREMENT,
-  movie_name VARCHAR(80) NOT NULL,
+  title VARCHAR(80) NOT NULL,
   movie_date YEAR,
   movie_length int,
 PRIMARY KEY (movie_id)
 );
+
+
+# DROP DATABASE movies_library;
