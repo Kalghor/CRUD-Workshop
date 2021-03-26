@@ -17,12 +17,12 @@ import java.util.Scanner;
 
 public class MovieDao extends Movie {
 
-    private static final String CREATE_USER_QUERY = "INSERT INTO movies(movie_name, movie_date, movie_length) VALUES (?,?,?)";
-    private static final String SELECT_ALL_FROM_USERS = "SELECT * FROM movies";
-    private static final String UPDATE_USER_QUERY = "UPDATE movies SET movie_name = ?, movie_date = ?, movie_length = ? WHERE movie_name = ?";
-    private static final String DELETE_USER_QUERY = "DELETE FROM movies WHERE movie_name = ?";
-    public static final String SELECT_USER = "SELECT * FROM movies WHERE movie_name=";
-    public static final String SELECT_USER_BY_ID = "SELECT * FROM movies WHERE movie_id =";
+    private static final String CREATE_MOVIE_QUERY = "INSERT INTO movies(movie_name, movie_date, movie_length) VALUES (?,?,?)";
+    private static final String SELECT_ALL_FROM_MOVIES = "SELECT * FROM movies";
+    private static final String UPDATE_MOVIE_QUERY = "UPDATE movies SET movie_name = ?, movie_date = ?, movie_length = ? WHERE movie_name = ?";
+    private static final String DELETE_MOVIE_QUERY = "DELETE FROM movies WHERE movie_name = ?";
+    public static final String SELECT_MOVIE = "SELECT * FROM movies WHERE movie_name=";
+    public static final String SELECT_MOVIE_BY_ID = "SELECT * FROM movies WHERE movie_id =";
     public static final String PATH_TO_SAVE_AND_LOAD_DATA = "Data.csv";
 
     public MovieDao() {
@@ -32,7 +32,7 @@ public class MovieDao extends Movie {
         if (isExist(movie)) {
             try (Connection connection = DBUtils.getConnection("movies_library")) {
                 Statement stm = connection.createStatement();
-                ResultSet resultSet = stm.executeQuery(SELECT_USER + "\'" + movie.getTitle() + "\'");
+                ResultSet resultSet = stm.executeQuery(SELECT_MOVIE + "\'" + movie.getTitle() + "\'");
                 resultSet.next();
                 movie.setId(resultSet.getInt("id"));
                 System.out.println(movie.getId() + " already exists in the database.");
@@ -41,7 +41,7 @@ public class MovieDao extends Movie {
             }
         } else {
             try (Connection connection = DBUtils.getConnection("movies_library");
-                 PreparedStatement preparedStatement = connection.prepareStatement(CREATE_USER_QUERY, PreparedStatement.RETURN_GENERATED_KEYS)) {
+                 PreparedStatement preparedStatement = connection.prepareStatement(CREATE_MOVIE_QUERY, PreparedStatement.RETURN_GENERATED_KEYS)) {
                 preparedStatement.setString(1, movie.getTitle());
                 preparedStatement.setString(2, movie.getProductionData());
                 preparedStatement.setString(3, String.valueOf(movie.getMovieLength()));
@@ -61,7 +61,7 @@ public class MovieDao extends Movie {
         Movie movie = new Movie();
         try (Connection connection = DBUtils.getConnection("movies_library")) {
             Statement stm = connection.createStatement();
-            ResultSet resultSet = stm.executeQuery(SELECT_USER_BY_ID + "\'" + movieId + "\'");
+            ResultSet resultSet = stm.executeQuery(SELECT_MOVIE_BY_ID + "\'" + movieId + "\'");
             if (resultSet.next()) {
                 movie.setId(Integer.parseInt(resultSet.getString("movie_id")));
                 movie.setTitle(resultSet.getString("title"));
@@ -85,7 +85,7 @@ public class MovieDao extends Movie {
             String productionData = movie.getProductionData();
             int movieLength = movie.getMovieLength();
             try (Connection connection = DBUtils.getConnection("movies_library")) {
-                PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_USER_QUERY);
+                PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_MOVIE_QUERY);
                 preparedStatement.setString(1, title);
                 preparedStatement.setString(2, productionData);
                 preparedStatement.setString(3, String.valueOf(movieLength));
@@ -103,7 +103,7 @@ public class MovieDao extends Movie {
     public void delete(int movieId) {
         if (isExist(movieId)) {
             try (Connection connection = DBUtils.getConnection("movies_library")) {
-                PreparedStatement preparedStatement = connection.prepareStatement(DELETE_USER_QUERY);
+                PreparedStatement preparedStatement = connection.prepareStatement(DELETE_MOVIE_QUERY);
                 preparedStatement.setInt(1, movieId);
                 preparedStatement.executeUpdate();
                 System.out.println("Record deleted from database");
@@ -120,7 +120,7 @@ public class MovieDao extends Movie {
         Movie[] moviesArr = new Movie[0];
         try (Connection connection = DBUtils.getConnection("movies_library")) {
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(SELECT_ALL_FROM_USERS);
+            ResultSet resultSet = statement.executeQuery(SELECT_ALL_FROM_MOVIES);
             while (resultSet.next()) {
                 movie.setId(resultSet.getInt("movie_id"));
                 movie.setTitle(resultSet.getString("title"));
@@ -184,7 +184,7 @@ public class MovieDao extends Movie {
         boolean result = false;
         try (Connection connection = DBUtils.getConnection("movie_length")) {
             Statement stm = connection.createStatement();
-            ResultSet resultSet = stm.executeQuery(SELECT_USER + "\'" + movie.getTitle() + "\'");
+            ResultSet resultSet = stm.executeQuery(SELECT_MOVIE + "\'" + movie.getTitle() + "\'");
             if (resultSet.next()) {
                 if (movie.getTitle().equals(resultSet.getString("title"))) {
                     result = true;
@@ -200,7 +200,7 @@ public class MovieDao extends Movie {
         boolean result = false;
         try (Connection connection = DBUtils.getConnection("movie_length")) {
             Statement stm = connection.createStatement();
-            ResultSet resultSet = stm.executeQuery(SELECT_ALL_FROM_USERS);
+            ResultSet resultSet = stm.executeQuery(SELECT_ALL_FROM_MOVIES);
             while (resultSet.next()) {
                 if (movieId == (resultSet.getInt("movie_id"))) {
                     result = true;
